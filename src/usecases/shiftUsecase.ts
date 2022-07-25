@@ -17,10 +17,6 @@ export const findById = async (
   return shiftRepository.findById(id, opts);
 };
 
-
-
-
-
 export const create = async (payload: ICreateShift): Promise<IUseCaseResponse> => {
   const published = await checkPublishedWeek(payload);
   if(published){
