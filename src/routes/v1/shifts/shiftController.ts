@@ -5,6 +5,7 @@ import {
   ICreateShift,
   ISuccessResponse,
   IUpdateShift,
+  IUseCaseResponse,
 } from "../../../shared/interfaces";
 import moduleLogger from "../../../shared/functions/logger";
 
@@ -48,15 +49,15 @@ export const create = async (req: Request, h: ResponseToolkit) => {
   logger.info("Create shift");
   try {
     const body = req.payload as ICreateShift;
-    const isOverlap = await shiftUsecase.checkOverlappingTime(body);
-    if(isOverlap){
-      throw new Error("Time overlaps!")
+
+    const result:IUseCaseResponse = await shiftUsecase.create(body);
+    if(result.error != ""){
+      throw new Error(result.error)
     }
-    const data = await shiftUsecase.create(body);
     const res: ISuccessResponse = {
       statusCode: 200,
       message: "Create shift successful",
-      results: data,
+      results: result.data,
     };
     return res;
   } catch (error) {

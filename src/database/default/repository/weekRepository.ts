@@ -39,6 +39,5 @@ export const create = async (payload:Week):Promise<Week> => {
     logger.info("Create week / Publish");
     const repository = getRepository(Week);
     const newData = await repository.save(payload);
-    console.log(newData)
     return newData;
 }

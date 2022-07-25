@@ -19,17 +19,33 @@ export const getWeekStartAndEndDifferences = (date)=>{
 }
 
 const timeToNumber  = (time)=>{
-    return parseInt(time.split(":").join(""));
+    const splitTime = time.split(":")
+    return parseInt(splitTime[0] + splitTime[1]);
 }
 
 export const timeOverlaps = (a:any, b:any)=>{
-    const aStartToNumber = timeToNumber(a.startTime);
-    const aEndToNumber = timeToNumber(a.endTime);
-    const bStartToNumber = timeToNumber(b.startTime);
-    const bEndToNumber = timeToNumber(b.endTime);
+    const aStartToNumber = timeToNumber(a.start);
+    const aEndToNumber = timeToNumber(a.end);
+    const bStartToNumber = timeToNumber(b.start);
+    const bEndToNumber = timeToNumber(b.end);
 
-    if(aStartToNumber < bStartToNumber && aEndToNumber > bEndToNumber){
+    if(aStartToNumber == bStartToNumber && aEndToNumber == bEndToNumber){
+        console.log("Overlaps!")
         return true;
     }
 
+    if(aStartToNumber > bStartToNumber){
+        if(aEndToNumber <= bEndToNumber){
+            return true;
+        }
+    }
+    else if(aStartToNumber < bStartToNumber){
+        if(aEndToNumber <= bEndToNumber && aEndToNumber < bStartToNumber){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    return false;
 } 

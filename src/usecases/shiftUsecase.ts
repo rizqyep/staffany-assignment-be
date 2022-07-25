@@ -1,7 +1,8 @@
+import * as weekRepository from "../database/default/repository/weekRepository"
 import * as shiftRepository from "../database/default/repository/shiftRepository";
 import { FindManyOptions, FindOneOptions, Between} from "typeorm";
 import Shift from "../database/default/entity/shift";
-import { ICreateShift, IUpdateShift } from "../shared/interfaces";
+import { ICreateShift, IUpdateShift, IUseCaseResponse } from "../shared/interfaces";
 import { getWeekStartAndEndDifferences, timeOverlaps } from "../shared/functions/shiftDateTime";
 
 
@@ -20,14 +21,24 @@ export const findById = async (
 
 
 
-export const create = async (payload: ICreateShift): Promise<Shift> => {
+export const create = async (payload: ICreateShift): Promise<IUseCaseResponse> => {
+  const published = await checkPublishedWeek(payload);
+  if(published){
+    return {error:"Week has been published", data:{}}
+  }
+  const isOverlap = await checkOverlappingTime(payload);
+  if(isOverlap){
+    return {error:"Time Overlaps", data:{}}
+  }
+
+  
   const shift = new Shift();
   shift.name = payload.name;
   shift.date = payload.date;
   shift.startTime = payload.startTime;
   shift.endTime = payload.endTime;
-
-  return shiftRepository.create(shift);
+  const data = await shiftRepository.create(shift);
+  return {error:"", data}
 };
 
 export const updateById = async (
@@ -44,10 +55,32 @@ export const deleteById = async (id: string | string[]) => {
 };
 
 
+const checkPublishedWeek = async(payload:ICreateShift):Promise<Boolean> =>{
+  const {startDifference, endDifference}:any = getWeekStartAndEndDifferences(payload.date);
+  const [startWeek, endWeek] = [
+    new Date(payload.date),
+    new Date(payload.date)
+  ];
 
-export const checkOverlappingTime = async(payload: ICreateShift):Promise<Boolean> => {
+  startWeek.setDate(startWeek.getDate() - startDifference);
+  endWeek.setDate(endWeek.getDate() + endDifference);
+
+  const week = await weekRepository.findOne({
+    startDate: new Date(startWeek).toISOString(),
+    endDate: new Date(endWeek).toISOString()
+  });
+
+  if(week){
+    return true;
+  }
+
+  return false;
+
+}
+
+
+const checkOverlappingTime = async(payload: ICreateShift):Promise<Boolean> => {
     const {startDifference, endDifference}:any = getWeekStartAndEndDifferences(payload.date);
-
     const [startWeek, endWeek] = [
       new Date(payload.date),
       new Date(payload.date)
@@ -56,7 +89,7 @@ export const checkOverlappingTime = async(payload: ICreateShift):Promise<Boolean
     startWeek.setDate(startWeek.getDate() - startDifference);
     endWeek.setDate(endWeek.getDate() + endDifference);
 
-    const shifts = await shiftRepository.find({
+    const shifts:Shift[] = await shiftRepository.find({
       where:{
         date:
           Between(
@@ -65,18 +98,19 @@ export const checkOverlappingTime = async(payload: ICreateShift):Promise<Boolean
           )
       }
     });
+    let overlaps = false;
 
-    console.log(payload.date);
+    shifts.forEach((shift)=>{
+      const payloadDate = new Date(payload.date).toISOString().split("T")[0]
 
-    for(let i = 0 ; i < shifts.length ; i++){
-      if(shifts[i].date == payload.date){
+      if(shift.date == payloadDate){
         const a = {start:payload.startTime, end: payload.endTime}
-        const b = {start:shifts[i].startTime, end: shifts[i].endTime}
+        const b = {start:shift.startTime, end: shift.endTime}
         if(timeOverlaps(a,b)){
-          return true;
+          overlaps = true;
         }
       }
-    }
+    })
 
-    return false;
+    return overlaps;
 }
