@@ -1,11 +1,10 @@
 import * as weekRepository from "../database/default/repository/weekRepository";
-import { FindManyOptions, FindOneOptions, Between} from "typeorm";
 import Week from "../database/default/entity/week";
-import { ICreateWeek } from "../shared/interfaces/week";
+import { ICreateWeek, IFindWeek } from "../shared/interfaces/week";
 
 
 export const findOne = async (
-  opts?: FindOneOptions<Week>
+  opts: IFindWeek
 ): Promise<Week> => {
   return weekRepository.findOne(opts);
 };

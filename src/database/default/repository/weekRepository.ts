@@ -1,10 +1,9 @@
 import {
   getRepository,
-  FindConditions,
   FindOneOptions,
 } from "typeorm";
-import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 import moduleLogger from "../../../shared/functions/logger";
+import { IFindWeek } from "../../../shared/interfaces";
 import Week from "../entity/week";
 
 
@@ -21,28 +20,25 @@ export const findById = async (
 };
 
 export const findOne = async (
-  opts?: FindOneOptions<Week>
+  opts?: IFindWeek
 ): Promise<Week> => {
   logger.info("Find one");
   const repository = getRepository(Week);
-  const data = await repository.findOne(opts);
+  const data = await repository.findOne({
+    where:{
+        startDate: new Date(opts.startDate),
+        endDate: new Date(opts.endDate)
+    }
+  })
   return data;
 };
 
-export const updateById = async (
-  id: string,
-  payload: QueryDeepPartialEntity<Week>
-): Promise<Week> => {
-  logger.info("Update by id");
-  const repository = getRepository(Week);
-  await repository.update(id, payload);
-  return findById(id);
-};
 
 
-export const create = async (data:Week):Promise<Week> => {
+export const create = async (payload:Week):Promise<Week> => {
     logger.info("Create week / Publish");
     const repository = getRepository(Week);
-    const newData = repository.create(data);
+    const newData = await repository.create(payload);
+    console.log(newData)
     return newData;
 }
