@@ -15,3 +15,8 @@ export const updateShiftDto = Joi.object({
   startTime: Joi.string().regex(timeRegex),
   endTime:Joi.string().regex(timeRegex),
 });
+
+export const findWeeklyShiftDto = Joi.object({
+  start: [Joi.string().required()],
+  end: [Joi.string().required()]
+})

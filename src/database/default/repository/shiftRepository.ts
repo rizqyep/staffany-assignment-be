@@ -4,6 +4,7 @@ import {
   FindOneOptions,
   FindConditions,
   DeleteResult,
+  Between,
 } from "typeorm";
 import moduleLogger from "../../../shared/functions/logger";
 import Shift from "../entity/shift";
@@ -62,3 +63,22 @@ export const deleteById = async (
   const repository = getRepository(Shift);
   return await repository.delete(id);
 };
+
+
+export const findInWeek = async(
+  start:Date, 
+  end:Date
+):Promise<Shift[]> => {
+  const repository = getRepository(Shift);
+  const data = await repository.find({
+      where:{
+        date:
+          Between(
+            start,
+            end
+          )
+      }
+    });
+
+  return data;
+}

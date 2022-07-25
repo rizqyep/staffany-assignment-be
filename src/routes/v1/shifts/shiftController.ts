@@ -3,6 +3,7 @@ import * as shiftUsecase from "../../../usecases/shiftUsecase";
 import { errorHandler } from "../../../shared/functions/error";
 import {
   ICreateShift,
+  IFindInWeekShift,
   ISuccessResponse,
   IUpdateShift,
   IUseCaseResponse,
@@ -93,6 +94,24 @@ export const deleteById = async (req: Request, h: ResponseToolkit) => {
     const res: ISuccessResponse = {
       statusCode: 200,
       message: "Delete shift successful",
+      results: data,
+    };
+    return res;
+  } catch (error) {
+    logger.error(error.message)
+    return errorHandler(h, error);
+  }
+};
+
+
+export const findInWeek = async (req: Request, h: ResponseToolkit) => {
+  logger.info("Find shifts");
+  try {
+    const weekFilter = req.query as IFindInWeekShift;
+    const data = await shiftUsecase.findInWeek(weekFilter);
+    const res: ISuccessResponse = {
+      statusCode: 200,
+      message: "Get shift successful",
       results: data,
     };
     return res;
