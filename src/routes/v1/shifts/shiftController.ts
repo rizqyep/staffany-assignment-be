@@ -73,11 +73,15 @@ export const updateById = async (req: Request, h: ResponseToolkit) => {
     const id = req.params.id;
     const body = req.payload as IUpdateShift;
 
-    const data = await shiftUsecase.updateById(id, body);
+    const result:IUseCaseResponse = await shiftUsecase.updateById(id, body);
+
+    if(result.error != ""){
+      throw new Error(result.error)
+    }
     const res: ISuccessResponse = {
       statusCode: 200,
       message: "Update shift successful",
-      results: data,
+      results: result.data,
     };
     return res;
   } catch (error) {
@@ -90,11 +94,14 @@ export const deleteById = async (req: Request, h: ResponseToolkit) => {
   logger.info("Delete shift by id");
   try {
     const id = req.params.id;
-    const data = await shiftUsecase.deleteById(id);
+    const result:IUseCaseResponse = await shiftUsecase.deleteById(id);
+    if(result.error != ""){
+      throw new Error(result.error)
+    }
     const res: ISuccessResponse = {
       statusCode: 200,
       message: "Delete shift successful",
-      results: data,
+      results: result.data,
     };
     return res;
   } catch (error) {

@@ -10,7 +10,8 @@ const jsDaysObject = {
 
 const staffAnyDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export const getWeekStartAndEndDifferences = (date)=>{
+export const getWeekStartAndEndDifferences = (date:any)=>{
+    date = new Date(date);
     const currentDayIndex = staffAnyDays.indexOf(jsDaysObject[date.getDay().toString()]);
     return {
         startDifference: currentDayIndex - staffAnyDays.indexOf('Mon'),

@@ -28,7 +28,7 @@ export const create = async (payload: ICreateShift): Promise<IUseCaseResponse> =
   }
   const isOverlap = await checkOverlappingTime(payload);
   if(isOverlap){
-    return {error:"Time Overlaps", data:{}}
+    return {error:"Shift Time Overlaps with Existing Shift!", data:{}}
   }
 
   
@@ -44,14 +44,44 @@ export const create = async (payload: ICreateShift): Promise<IUseCaseResponse> =
 export const updateById = async (
   id: string,
   payload: IUpdateShift
-): Promise<Shift> => {
-  return shiftRepository.updateById(id, {
+): Promise<IUseCaseResponse> => {
+
+ 
+  const published = await checkPublishedWeek(payload as ICreateShift);
+  if(published){
+    return {error:"Week has been published", data:{}}
+  }
+  const isOverlap = await checkOverlappingTime(payload as ICreateShift);
+  if(isOverlap){
+    return {error:"Shift Time Overlaps with Existing Shift!", data:{}}
+  }
+
+  const data = shiftRepository.updateById(id, {
     ...payload,
   });
+
+  return {error:"", data};
 };
 
 export const deleteById = async (id: string | string[]) => {
-  return shiftRepository.deleteById(id);
+  let currentData;
+  if (Array.isArray(id)) {
+    currentData = await findById(id[0]);
+  }else{
+    currentData = await findById(id);
+  }
+  
+  const published = await checkPublishedWeek(currentData as ICreateShift);
+  if(published){
+    return {error:"Week has been published", data:{}}
+  }else{
+
+    await shiftRepository.deleteById(id);
+    return {
+      error:"",
+      data:{}
+    }
+  }
 };
 
 
