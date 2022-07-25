@@ -10,7 +10,7 @@ import Week from "../entity/week";
 
 const logger = moduleLogger("weekRepository");
 
-const findById = async (
+export const findById = async (
   id: string,
   opts?: FindOneOptions<Week>
 ): Promise<Week> => {
@@ -21,12 +21,11 @@ const findById = async (
 };
 
 export const findOne = async (
-  where?: FindConditions<Week>,
   opts?: FindOneOptions<Week>
 ): Promise<Week> => {
   logger.info("Find one");
   const repository = getRepository(Week);
-  const data = await repository.findOne(where, opts);
+  const data = await repository.findOne(opts);
   return data;
 };
 
@@ -39,3 +38,11 @@ export const updateById = async (
   await repository.update(id, payload);
   return findById(id);
 };
+
+
+export const create = async (data:Week):Promise<Week> => {
+    logger.info("Create week / Publish");
+    const repository = getRepository(Week);
+    const newData = repository.create(data);
+    return newData;
+}
